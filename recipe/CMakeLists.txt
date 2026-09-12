@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.15)
+project(checksums_consumer LANGUAGES C)
+find_package(aws-c-common CONFIG REQUIRED)
+find_package(aws-checksums CONFIG REQUIRED)
+add_executable(checksums_consumer consumer.c)
+target_link_libraries(checksums_consumer PRIVATE AWS::aws-checksums)
