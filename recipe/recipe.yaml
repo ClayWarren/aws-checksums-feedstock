@@ -13,7 +13,7 @@ source:
   sha256: 6917e18b8d6079c02f36478ac59174eb3c47dc3bf040ea63bd93d127837f873f
 
 build:
-  number: 0
+  number: 1
 
 requirements:
   build:
@@ -32,6 +32,22 @@ tests:
         then:
           - test -f $PREFIX/lib/libaws-checksums${SHLIB_EXT}
           - test -f $PREFIX/include/aws/checksums/exports.h
+  - if: win and arm64
+    then:
+      requirements:
+        run:
+          - ${{ compiler('c') }}
+          - cmake
+      files:
+        recipe:
+          - CMakeLists.txt
+          - consumer.c
+      script:
+        - cmake -S . -B consumer-build -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%LIBRARY_PREFIX%"
+        - cmake --build consumer-build
+        - consumer-build\checksums_consumer.exe
+        - dumpbin /headers "%LIBRARY_BIN%\aws-checksums.dll" | findstr /I /C:"AA64 machine (ARM64)"
+        - dumpbin /headers consumer-build\checksums_consumer.exe | findstr /I /C:"AA64 machine (ARM64)"
 about:
   license: Apache-2.0
   license_file: LICENSE
@@ -40,6 +56,7 @@ about:
   repository: https://github.com/awslabs/aws-checksums
 
 extra:
+  feedstock-name: aws-checksums
   recipe-maintainers:
     - xhochy
     - conda-forge/aws-sdk-cpp
